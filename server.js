@@ -3,6 +3,7 @@ const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
 const dbConnect = require("./config/db.config");
+const authRoute  = require("./routes/authRoute");
 
 app.use(express.json());
 
@@ -12,31 +13,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.post("/api/v1/register", (req, res) => {
-  const { email, password, confirmPassword, acceptTerms } = req.body;
-  if (!email || !password || !confirmPassword || acceptTerms === undefined) {
-    return res.status(400).json({
-      message: "All fields are required",
-    });
-  }
-
-  if (password !== confirmPassword) {
-    return res.status(400).json({
-      message: "Passwords do not match",
-    });
-  }
-
-  if (typeof acceptTerms !== "boolean" || acceptTerms === false) {
-    return res.status(400).json({
-      message: "You must accept the terms and conditions",
-    });
-  }
-
-  res.json({
-    message: "User registration successful",
-    data: req.body,
-  });
-});
+app.use("/api/v1", authRoute)
 
 dbConnect();
 

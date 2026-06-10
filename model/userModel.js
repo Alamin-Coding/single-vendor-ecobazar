@@ -1,99 +1,99 @@
-const { Schema, Model } = require("mongoose");
-const { type } = require("node:os");
+const { Schema, model } = require("mongoose");
 
-const userSchema = new Schema(
-  {
-    email: {
-      type: String,
-      required: true,
-      trim: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-      trim: true,
-      minlength: 6,
-      maxlength: 32,
-    },
-    confirmPassword: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    acceptTerms: {
-      type: Boolean,
-      required: true,
-    },
-    firstName: {
-      type: String,
-      trim: true,
-    },
-    lastName: {
-      type: String,
-      trim: true,
-    },
-    avatar: {
-      type: String,
-      trim: true,
-    },
-    phoneNumber: {
-      type: String,
-      trim: true,
-    },
-    address: {
-      type: String,
-      trim: true,
-    },
-    role: {
-      type: String,
-      enum: ["user", "admin", "editor"],
-      default: "user",
-    },
-    //
-    billingAddress: {
-      firstName: {
-        type: String,
-        trim: true,
-        required: true,
-      },
-      lastName: {
-        type: String,
-        trim: true,
-        required: true,
-      },
-      companyName: {
-        type: String,
-        trim: true,
-      },
-      streetAddress: {
-        type: String,
-        trim: true,
-        required: true,
-      },
-      zipcode: {
-        type: String,
-        trim: true,
-      },
-      country: {
-        type: String,
-        trim: true,
-        required: true,
-      },
-      email: {
-        type: String,
-        trim: true,
-      },
-      phoneNumber: {
-        type: String,
-        trim: true,
-        required: true,
-      },
-    },
-  },
-  { timestamp: true },
+const billingAddressSchema = new Schema(
+	{
+		firstName: {
+			type: String,
+			trim: true,
+		},
+		lastName: {
+			type: String,
+			trim: true,
+		},
+		companyName: {
+			type: String,
+			trim: true,
+		},
+		streetAddress: {
+			type: String,
+			trim: true,
+		},
+		zipcode: {
+			type: String,
+			trim: true,
+		},
+		country: {
+			type: String,
+			trim: true,
+		},
+		email: {
+			type: String,
+			trim: true,
+		},
+		phoneNumber: {
+			type: String,
+			trim: true,
+		},
+	},
+	{ _id: false },
 );
 
-const User = Model("User", userSchema);
+const userSchema = new Schema(
+	{
+		email: {
+			type: String,
+			required: true,
+			trim: true,
+			unique: true,
+		},
+		password: {
+			type: String,
+			required: true,
+			trim: true,
+		},
+		confirmPassword: {
+			type: String,
+			trim: true,
+		},
+		acceptTerms: {
+			type: Boolean,
+			required: true,
+		},
+		firstName: {
+			type: String,
+			trim: true,
+		},
+		lastName: {
+			type: String,
+			trim: true,
+		},
+		avatar: {
+			type: String,
+			trim: true,
+		},
+		phoneNumber: {
+			type: String,
+			trim: true,
+		},
+		address: {
+			type: String,
+			trim: true,
+		},
+		role: {
+			type: String,
+			enum: ["user", "admin", "editor"],
+			default: "user",
+		},
+		//
+		billingAddress: billingAddressSchema,
+		isVerified: {
+			type: Boolean,
+			default: false,
+		},
+	},
+	{ timestamp: true },
+);
 
-module.exports = User;
+// const User = Model("User", userSchema);
+
+module.exports = model("User", userSchema);
