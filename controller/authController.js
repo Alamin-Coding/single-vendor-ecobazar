@@ -1,40 +1,49 @@
 const UserModel = require("../model/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const sendEmail = require("../utils/sendEmail");
+const {sendEmail, sendForgotEmail} = require("../utils/sendEmail");
 
 const registrationController = async (req, res) => {
-	const { email, username, password, confirmPassword, acceptTerms } = req.body;
+	const { email, firstName, password, confirmPassword, acceptTerms } = req.body;
 	if (!email || !password || !confirmPassword || acceptTerms === undefined) {
 		return res.status(400).json({
+			success: false,
 			message: "All fields are required",
 		});
 	}
 
 	if (password !== confirmPassword) {
 		return res.status(400).json({
+			success: false,
 			message: "Passwords do not match",
 		});
 	}
 
 	if (typeof acceptTerms !== "boolean" || acceptTerms === false) {
 		return res.status(400).json({
+			success: false,
 			message: "You must accept the terms and conditions",
 		});
 	}
 
 	const isUserExist = await UserModel.findOne({ email });
+	if(isUserExist) {
+		return res.json({
+			success: false,
+			message: "User Already exist"
+		});
+	}
 
 	// hash password create
 	const hashPassword = bcrypt.hashSync(password, 10);
+	
 
-	if (!isUserExist) {
-		const newUser = await UserModel.insertOne({
+	const newUser = await UserModel.create({
+			firstName,
 			email,
 			password: hashPassword,
 			acceptTerms,
 		});
-		newUser.save();
 
 		const token = jwt.sign(
 			{ id: newUser._id, email: newUser.email },
@@ -43,12 +52,12 @@ const registrationController = async (req, res) => {
 		);
 
 		// send verification email
-		sendEmail(email, username, token);
-	}
+		sendEmail(email, firstName, token);
 
 	res.json({
-		message: "User registration successful",
-		data: req.body,
+		success: true,
+		message: "User registration successfull",
+		data: newUser
 	});
 };
 
@@ -87,8 +96,55 @@ const verifyController = async (req, res) => {
         message: "email varification successfull"
      });
 };
-const loginController = (req, res) => {
-	res.json({});
+const loginController = async (req, res) => {
+	const {email, password} = req.body;
+
+	const isUserExist = await UserModel.findOne({ email });
+
+	if(!isUserExist) {
+		return res.json({
+			success: false,
+			message: "User Not Found!"
+		});
+	}
+
+	// Password match
+	const matchPassword = bcrypt.compareSync(password, isUserExist.password)
+	
+		if(!matchPassword) {
+			return res.json({
+				success: false,
+				message: "Credential error"
+			});
+		}
+
+	res.json({
+		success: true,
+		message: "Successfully Login"
+	});
+};
+const forgotPasswordController = async (req, res) => {
+	const {email} = req.body;
+
+	const isUserExist = await UserModel.findOne({ email });
+
+	if(!isUserExist) {
+		return res.json({
+			success: false,
+			message: "User Not Found!"
+		});
+	}
+
+	const token = jwt.sign({}, process.env.JWT_SECRET, {expiresIn: "2m"});
+
+	sendForgotEmail(email, token)
+
+	res.json({
+		success: true,
+		message: "Check your email"
+	});
 };
 
-module.exports = { registrationController, verifyController, loginController };
+
+
+module.exports = { registrationController, verifyController, loginController, forgotPasswordController };
